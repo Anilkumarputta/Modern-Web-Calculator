@@ -6,7 +6,219 @@ class Calculator {
         this.memory = 0;
         this.history = [];
         this.soundEnabled = true;
+        this.mode = 'standard'; // standard, scientific, programmer
+        this.angleMode = 'DEG'; // DEG or RAD for scientific mode
+        this.numberBase = 10; // 10 (DEC), 16 (HEX), 8 (OCT), 2 (BIN) for programmer mode
         this.clear();
+    }
+
+    // Set calculator mode
+    setMode(mode) {
+        this.mode = mode;
+        this.clear();
+        updateModeIndicator();
+        if (mode === 'programmer') {
+            document.getElementById('base-display').style.display = 'block';
+            this.updateBaseDisplay();
+        } else {
+            document.getElementById('base-display').style.display = 'none';
+        }
+    }
+
+    // Toggle angle mode (DEG/RAD)
+    toggleAngleMode() {
+        this.angleMode = this.angleMode === 'DEG' ? 'RAD' : 'DEG';
+        showToast(`Angle mode: ${this.angleMode}`);
+        updateModeIndicator();
+    }
+
+    // Convert degrees to radians
+    toRadians(degrees) {
+        return degrees * (Math.PI / 180);
+    }
+
+    // Scientific functions
+    sqrt() {
+        const current = parseFloat(this.currentOperand);
+        if (isNaN(current) || current < 0) {
+            this.showError('Invalid input');
+            return;
+        }
+        this.currentOperand = Math.sqrt(current).toString();
+        this.shouldResetScreen = true;
+        this.addToHistory(`√(${current})`, parseFloat(this.currentOperand));
+    }
+
+    square() {
+        const current = parseFloat(this.currentOperand);
+        if (isNaN(current)) return;
+        this.currentOperand = (current * current).toString();
+        this.shouldResetScreen = true;
+        this.addToHistory(`(${current})²`, parseFloat(this.currentOperand));
+    }
+
+    power() {
+        if (this.currentOperand === '' || this.currentOperand === '.') return;
+        if (this.previousOperand !== '' && !this.shouldResetScreen) {
+            this.compute();
+        }
+        this.operation = '^';
+        this.previousOperand = this.currentOperand;
+        this.shouldResetScreen = true;
+    }
+
+    sin() {
+        const current = parseFloat(this.currentOperand);
+        if (isNaN(current)) return;
+        const value = this.angleMode === 'DEG' ? this.toRadians(current) : current;
+        this.currentOperand = Math.sin(value).toString();
+        this.shouldResetScreen = true;
+        this.addToHistory(`sin(${current})`, parseFloat(this.currentOperand));
+    }
+
+    cos() {
+        const current = parseFloat(this.currentOperand);
+        if (isNaN(current)) return;
+        const value = this.angleMode === 'DEG' ? this.toRadians(current) : current;
+        this.currentOperand = Math.cos(value).toString();
+        this.shouldResetScreen = true;
+        this.addToHistory(`cos(${current})`, parseFloat(this.currentOperand));
+    }
+
+    tan() {
+        const current = parseFloat(this.currentOperand);
+        if (isNaN(current)) return;
+        const value = this.angleMode === 'DEG' ? this.toRadians(current) : current;
+        this.currentOperand = Math.tan(value).toString();
+        this.shouldResetScreen = true;
+        this.addToHistory(`tan(${current})`, parseFloat(this.currentOperand));
+    }
+
+    log() {
+        const current = parseFloat(this.currentOperand);
+        if (isNaN(current) || current <= 0) {
+            this.showError('Invalid input');
+            return;
+        }
+        this.currentOperand = Math.log10(current).toString();
+        this.shouldResetScreen = true;
+        this.addToHistory(`log(${current})`, parseFloat(this.currentOperand));
+    }
+
+    ln() {
+        const current = parseFloat(this.currentOperand);
+        if (isNaN(current) || current <= 0) {
+            this.showError('Invalid input');
+            return;
+        }
+        this.currentOperand = Math.log(current).toString();
+        this.shouldResetScreen = true;
+        this.addToHistory(`ln(${current})`, parseFloat(this.currentOperand));
+    }
+
+    exp() {
+        const current = parseFloat(this.currentOperand);
+        if (isNaN(current)) return;
+        this.currentOperand = Math.exp(current).toString();
+        this.shouldResetScreen = true;
+        this.addToHistory(`e^${current}`, parseFloat(this.currentOperand));
+    }
+
+    factorial() {
+        const current = parseInt(this.currentOperand);
+        if (isNaN(current) || current < 0 || current > 170) {
+            this.showError('Invalid input');
+            return;
+        }
+        let result = 1;
+        for (let i = 2; i <= current; i++) {
+            result *= i;
+        }
+        this.currentOperand = result.toString();
+        this.shouldResetScreen = true;
+        this.addToHistory(`${current}!`, result);
+    }
+
+    insertConstant(constant) {
+        if (constant === 'π') {
+            this.currentOperand = Math.PI.toString();
+        } else if (constant === 'e') {
+            this.currentOperand = Math.E.toString();
+        }
+        this.shouldResetScreen = true;
+    }
+
+    // Programmer mode functions
+    setBase(base) {
+        const current = this.getCurrentDecimalValue();
+        this.numberBase = base;
+        this.currentOperand = this.formatNumberInBase(current, base);
+        this.updateBaseDisplay();
+        showToast(`Base: ${this.getBaseName(base)}`);
+    }
+
+    getCurrentDecimalValue() {
+        if (this.mode !== 'programmer') {
+            return parseInt(this.currentOperand) || 0;
+        }
+        // Parse based on current base
+        return parseInt(this.currentOperand, this.numberBase) || 0;
+    }
+
+    formatNumberInBase(decValue, base) {
+        if (isNaN(decValue)) return '0';
+        const value = Math.floor(decValue);
+        if (value < 0) return '0'; // Programmer mode doesn't handle negative
+        return value.toString(base).toUpperCase();
+    }
+
+    getBaseName(base) {
+        const names = {2: 'BIN', 8: 'OCT', 10: 'DEC', 16: 'HEX'};
+        return names[base] || 'DEC';
+    }
+
+    updateBaseDisplay() {
+        if (this.mode !== 'programmer') return;
+        const decValue = this.getCurrentDecimalValue();
+        document.getElementById('hex-value').textContent = this.formatNumberInBase(decValue, 16);
+        document.getElementById('dec-value').textContent = this.formatNumberInBase(decValue, 10);
+        document.getElementById('oct-value').textContent = this.formatNumberInBase(decValue, 8);
+        document.getElementById('bin-value').textContent = this.formatNumberInBase(decValue, 2);
+    }
+
+    bitwiseOperation(operation) {
+        if (this.currentOperand === '' || this.currentOperand === '.') return;
+        if (this.previousOperand !== '' && !this.shouldResetScreen) {
+            this.compute();
+        }
+        this.operation = operation;
+        this.previousOperand = this.currentOperand;
+        this.shouldResetScreen = true;
+    }
+
+    bitShift(direction) {
+        const current = this.getCurrentDecimalValue();
+        let result;
+        if (direction === 'left') {
+            result = current << 1;
+            this.addToHistory(`${current} << 1`, result);
+        } else {
+            result = current >> 1;
+            this.addToHistory(`${current} >> 1`, result);
+        }
+        this.currentOperand = this.formatNumberInBase(result, this.numberBase);
+        this.shouldResetScreen = true;
+        this.updateBaseDisplay();
+    }
+
+    bitNot() {
+        const current = this.getCurrentDecimalValue();
+        // Use 32-bit NOT
+        const result = ~current >>> 0; // Convert to unsigned
+        this.currentOperand = this.formatNumberInBase(result, this.numberBase);
+        this.shouldResetScreen = true;
+        this.updateBaseDisplay();
+        this.addToHistory(`NOT ${current}`, result);
     }
 
     // Clear all values
@@ -75,6 +287,21 @@ class Calculator {
             this.shouldResetScreen = false;
         }
 
+        // In programmer mode, validate hex digits
+        if (this.mode === 'programmer') {
+            const validDigits = {
+                2: ['0', '1'],
+                8: ['0', '1', '2', '3', '4', '5', '6', '7'],
+                10: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+                16: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F']
+            };
+            if (!validDigits[this.numberBase].includes(number.toUpperCase())) {
+                return; // Invalid digit for current base
+            }
+            // No decimal points in programmer mode
+            if (number === '.') return;
+        }
+
         // Prevent multiple decimal points
         if (number === '.' && this.currentOperand.includes('.')) return;
 
@@ -83,6 +310,11 @@ class Calculator {
             this.currentOperand = number;
         } else {
             this.currentOperand += number;
+        }
+        
+        // Update base display in programmer mode
+        if (this.mode === 'programmer') {
+            this.updateBaseDisplay();
         }
         
         this.removeErrorState();
@@ -106,8 +338,16 @@ class Calculator {
     // Perform calculation
     compute() {
         let computation;
-        const prev = parseFloat(this.previousOperand);
-        const current = parseFloat(this.currentOperand);
+        let prev, current;
+        
+        // For programmer mode, use decimal values
+        if (this.mode === 'programmer') {
+            prev = parseInt(this.previousOperand, this.numberBase) || 0;
+            current = parseInt(this.currentOperand, this.numberBase) || 0;
+        } else {
+            prev = parseFloat(this.previousOperand);
+            current = parseFloat(this.currentOperand);
+        }
 
         // If either value is not a number, return
         if (isNaN(prev) || isNaN(current)) return;
@@ -135,17 +375,47 @@ class Calculator {
             case '%':
                 computation = prev / 100;
                 break;
+            case '^':
+                computation = Math.pow(prev, current);
+                break;
+            // Bitwise operations for programmer mode
+            case 'AND':
+                computation = prev & current;
+                break;
+            case 'OR':
+                computation = prev | current;
+                break;
+            case 'XOR':
+                computation = prev ^ current;
+                break;
+            case '<<':
+                computation = prev << current;
+                break;
+            case '>>':
+                computation = prev >> current;
+                break;
             default:
                 return;
         }
 
-        // Round to avoid floating point precision issues
-        computation = Math.round(computation * 100000000) / 100000000;
+        // Round to avoid floating point precision issues (except for programmer mode)
+        if (this.mode !== 'programmer') {
+            computation = Math.round(computation * 100000000) / 100000000;
+        } else {
+            computation = Math.floor(computation); // Integer only for programmer mode
+        }
         
         // Add to history
         this.addToHistory(expression, computation);
         
-        this.currentOperand = computation.toString();
+        // Format result based on mode
+        if (this.mode === 'programmer') {
+            this.currentOperand = this.formatNumberInBase(computation, this.numberBase);
+            this.updateBaseDisplay();
+        } else {
+            this.currentOperand = computation.toString();
+        }
+        
         this.operation = undefined;
         this.previousOperand = '';
         this.shouldResetScreen = true;
@@ -359,88 +629,243 @@ copyBtn.addEventListener('click', async () => {
     playSound();
 });
 
-// Number buttons
-const numberButtons = document.querySelectorAll('[data-number]');
-numberButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        calculator.appendNumber(button.textContent);
-        calculator.updateDisplay();
-        addPressAnimation(button);
+// Button Layout Definitions
+const buttonLayouts = {
+    standard: [
+        {text: 'C', class: 'btn-clear', action: 'clear'},
+        {text: 'DEL', class: 'btn-delete', action: 'delete'},
+        {text: 'MC', class: 'btn-memory', action: 'memory', subaction: 'clear'},
+        {text: 'MR', class: 'btn-memory', action: 'memory', subaction: 'recall'},
+        {text: 'M+', class: 'btn-memory', action: 'memory', subaction: 'add'},
+        {text: 'M-', class: 'btn-memory', action: 'memory', subaction: 'subtract'},
+        {text: '%', class: 'btn-operator', action: 'operation'},
+        {text: '÷', class: 'btn-operator', action: 'operation'},
+        {text: '7', class: 'btn-number', action: 'number'},
+        {text: '8', class: 'btn-number', action: 'number'},
+        {text: '9', class: 'btn-number', action: 'number'},
+        {text: '×', class: 'btn-operator', action: 'operation'},
+        {text: '4', class: 'btn-number', action: 'number'},
+        {text: '5', class: 'btn-number', action: 'number'},
+        {text: '6', class: 'btn-number', action: 'number'},
+        {text: '-', class: 'btn-operator', action: 'operation'},
+        {text: '1', class: 'btn-number', action: 'number'},
+        {text: '2', class: 'btn-number', action: 'number'},
+        {text: '3', class: 'btn-number', action: 'number'},
+        {text: '+', class: 'btn-operator', action: 'operation'},
+        {text: '+/-', class: 'btn-special', action: 'negate'},
+        {text: '0', class: 'btn-number', action: 'number'},
+        {text: '.', class: 'btn-number', action: 'number'},
+        {text: '=', class: 'btn-equals', action: 'equals'}
+    ],
+    scientific: [
+        {text: 'C', class: 'btn-clear', action: 'clear'},
+        {text: 'DEL', class: 'btn-delete', action: 'delete'},
+        {text: calculator.angleMode || 'DEG', class: 'btn-scientific', action: 'angleMode', id: 'angle-mode-btn'},
+        {text: 'π', class: 'btn-scientific', action: 'constant'},
+        {text: 'e', class: 'btn-scientific', action: 'constant'},
+        {text: 'x²', class: 'btn-scientific', action: 'square'},
+        {text: 'xⁿ', class: 'btn-scientific', action: 'power'},
+        {text: '√', class: 'btn-scientific', action: 'sqrt'},
+        {text: 'sin', class: 'btn-scientific', action: 'sin'},
+        {text: 'cos', class: 'btn-scientific', action: 'cos'},
+        {text: 'tan', class: 'btn-scientific', action: 'tan'},
+        {text: '÷', class: 'btn-operator', action: 'operation'},
+        {text: 'log', class: 'btn-scientific', action: 'log'},
+        {text: 'ln', class: 'btn-scientific', action: 'ln'},
+        {text: 'eˣ', class: 'btn-scientific', action: 'exp'},
+        {text: '×', class: 'btn-operator', action: 'operation'},
+        {text: '7', class: 'btn-number', action: 'number'},
+        {text: '8', class: 'btn-number', action: 'number'},
+        {text: '9', class: 'btn-number', action: 'number'},
+        {text: '-', class: 'btn-operator', action: 'operation'},
+        {text: '4', class: 'btn-number', action: 'number'},
+        {text: '5', class: 'btn-number', action: 'number'},
+        {text: '6', class: 'btn-number', action: 'number'},
+        {text: '+', class: 'btn-operator', action: 'operation'},
+        {text: '1', class: 'btn-number', action: 'number'},
+        {text: '2', class: 'btn-number', action: 'number'},
+        {text: '3', class: 'btn-number', action: 'number'},
+        {text: 'n!', class: 'btn-scientific', action: 'factorial'},
+        {text: '+/-', class: 'btn-special', action: 'negate'},
+        {text: '0', class: 'btn-number', action: 'number'},
+        {text: '.', class: 'btn-number', action: 'number'},
+        {text: '=', class: 'btn-equals', action: 'equals'}
+    ],
+    programmer: [
+        {text: 'C', class: 'btn-clear', action: 'clear'},
+        {text: 'DEL', class: 'btn-delete', action: 'delete'},
+        {text: 'HEX', class: 'btn-programmer', action: 'base', value: 16},
+        {text: 'DEC', class: 'btn-programmer', action: 'base', value: 10},
+        {text: 'OCT', class: 'btn-programmer', action: 'base', value: 8},
+        {text: 'BIN', class: 'btn-programmer', action: 'base', value: 2},
+        {text: 'AND', class: 'btn-bitwise', action: 'bitwise'},
+        {text: 'OR', class: 'btn-bitwise', action: 'bitwise'},
+        {text: 'XOR', class: 'btn-bitwise', action: 'bitwise'},
+        {text: 'NOT', class: 'btn-bitwise', action: 'bitNot'},
+        {text: '<<', class: 'btn-bitwise', action: 'shiftLeft'},
+        {text: '>>', class: 'btn-bitwise', action: 'shiftRight'},
+        {text: 'A', class: 'btn-number', action: 'number'},
+        {text: 'B', class: 'btn-number', action: 'number'},
+        {text: 'C', class: 'btn-number', action: 'number'},
+        {text: 'D', class: 'btn-number', action: 'number'},
+        {text: 'E', class: 'btn-number', action: 'number'},
+        {text: 'F', class: 'btn-number', action: 'number'},
+        {text: '7', class: 'btn-number', action: 'number'},
+        {text: '8', class: 'btn-number', action: 'number'},
+        {text: '9', class: 'btn-number', action: 'number'},
+        {text: '÷', class: 'btn-operator', action: 'operation'},
+        {text: '4', class: 'btn-number', action: 'number'},
+        {text: '5', class: 'btn-number', action: 'number'},
+        {text: '6', class: 'btn-number', action: 'number'},
+        {text: '×', class: 'btn-operator', action: 'operation'},
+        {text: '1', class: 'btn-number', action: 'number'},
+        {text: '2', class: 'btn-number', action: 'number'},
+        {text: '3', class: 'btn-number', action: 'number'},
+        {text: '-', class: 'btn-operator', action: 'operation'},
+        {text: '0', class: 'btn-number', action: 'number'},
+        {text: '=', class: 'btn-equals', action: 'equals'},
+        {text: '+', class: 'btn-operator', action: 'operation', colspan: 2}
+    ]
+};
+
+// Generate buttons based on mode
+function generateButtons(mode) {
+    const container = document.getElementById('button-container');
+    container.innerHTML = '';
+    
+    const layout = buttonLayouts[mode];
+    layout.forEach(btnDef => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `btn ${btnDef.class}`;
+        button.textContent = btnDef.text;
+        if (btnDef.id) button.id = btnDef.id;
+        if (btnDef.colspan) button.style.gridColumn = `span ${btnDef.colspan}`;
+        
+        // Add event listener based on action
+        button.addEventListener('click', () => {
+            handleButtonClick(btnDef);
+            addPressAnimation(button);
+            playSound();
+        });
+        
+        container.appendChild(button);
+    });
+}
+
+// Handle button clicks
+function handleButtonClick(btnDef) {
+    switch (btnDef.action) {
+        case 'number':
+            calculator.appendNumber(btnDef.text);
+            break;
+        case 'operation':
+            calculator.chooseOperation(btnDef.text);
+            break;
+        case 'equals':
+            calculator.compute();
+            break;
+        case 'clear':
+            calculator.clear();
+            break;
+        case 'delete':
+            calculator.deleteDigit();
+            break;
+        case 'negate':
+            calculator.negate();
+            break;
+        case 'memory':
+            if (btnDef.subaction === 'clear') calculator.memoryClear();
+            else if (btnDef.subaction === 'recall') calculator.memoryRecall();
+            else if (btnDef.subaction === 'add') calculator.memoryAdd();
+            else if (btnDef.subaction === 'subtract') calculator.memorySubtract();
+            break;
+        case 'sqrt':
+            calculator.sqrt();
+            break;
+        case 'square':
+            calculator.square();
+            break;
+        case 'power':
+            calculator.power();
+            break;
+        case 'sin':
+            calculator.sin();
+            break;
+        case 'cos':
+            calculator.cos();
+            break;
+        case 'tan':
+            calculator.tan();
+            break;
+        case 'log':
+            calculator.log();
+            break;
+        case 'ln':
+            calculator.ln();
+            break;
+        case 'exp':
+            calculator.exp();
+            break;
+        case 'factorial':
+            calculator.factorial();
+            break;
+        case 'constant':
+            calculator.insertConstant(btnDef.text);
+            break;
+        case 'angleMode':
+            calculator.toggleAngleMode();
+            generateButtons(calculator.mode); // Regenerate to update button text
+            break;
+        case 'base':
+            calculator.setBase(btnDef.value);
+            break;
+        case 'bitwise':
+            calculator.bitwiseOperation(btnDef.text);
+            break;
+        case 'bitNot':
+            calculator.bitNot();
+            break;
+        case 'shiftLeft':
+            calculator.bitShift('left');
+            break;
+        case 'shiftRight':
+            calculator.bitShift('right');
+            break;
+    }
+    calculator.updateDisplay();
+}
+
+// Mode switcher
+const modeBtns = document.querySelectorAll('[data-mode]');
+modeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const mode = btn.dataset.mode;
+        calculator.setMode(mode);
+        generateButtons(mode);
+        
+        // Update active state
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
         playSound();
     });
 });
 
-// Operation buttons
-const operationButtons = document.querySelectorAll('[data-operation]');
-operationButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        calculator.chooseOperation(button.textContent);
-        calculator.updateDisplay();
-        addPressAnimation(button);
-        playSound();
-    });
-});
+// Update mode indicator
+function updateModeIndicator() {
+    const indicator = document.getElementById('mode-indicator');
+    let text = `${calculator.mode.charAt(0).toUpperCase() + calculator.mode.slice(1)} Mode`;
+    if (calculator.mode === 'scientific') {
+        text += ` (${calculator.angleMode})`;
+    } else if (calculator.mode === 'programmer') {
+        text += ` (${calculator.getBaseName(calculator.numberBase)})`;
+    }
+    indicator.textContent = text;
+}
 
-// Equals button
-const equalsButton = document.querySelector('[data-equals]');
-equalsButton.addEventListener('click', () => {
-    calculator.compute();
-    calculator.updateDisplay();
-    addPressAnimation(equalsButton);
-    playSound();
-});
-
-// Clear button
-const clearButton = document.querySelector('[data-clear]');
-clearButton.addEventListener('click', () => {
-    calculator.clear();
-    calculator.updateDisplay();
-    addPressAnimation(clearButton);
-    playSound();
-});
-
-// Delete button
-const deleteButton = document.querySelector('[data-delete]');
-deleteButton.addEventListener('click', () => {
-    calculator.deleteDigit();
-    calculator.updateDisplay();
-    addPressAnimation(deleteButton);
-    playSound();
-});
-
-// Negate button
-const negateButton = document.querySelector('[data-negate]');
-negateButton.addEventListener('click', () => {
-    calculator.negate();
-    calculator.updateDisplay();
-    addPressAnimation(negateButton);
-    playSound();
-});
-
-// Memory buttons
-const memoryButtons = document.querySelectorAll('[data-memory]');
-memoryButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        const action = button.dataset.memory;
-        switch (action) {
-            case 'clear':
-                calculator.memoryClear();
-                break;
-            case 'recall':
-                calculator.memoryRecall();
-                break;
-            case 'add':
-                calculator.memoryAdd();
-                break;
-            case 'subtract':
-                calculator.memorySubtract();
-                break;
-        }
-        calculator.updateDisplay();
-        addPressAnimation(button);
-        playSound();
-    });
-});
+// Initialize with standard mode
+generateButtons('standard');
+updateModeIndicator();
 
 // Add press animation to button
 function addPressAnimation(button) {
@@ -459,91 +884,64 @@ document.addEventListener('keydown', (e) => {
         e.preventDefault();
     }
 
-    // Numbers 0-9
-    if (e.key >= '0' && e.key <= '9') {
-        calculator.appendNumber(e.key);
+    // Numbers 0-9 and hex digits A-F
+    if ((e.key >= '0' && e.key <= '9') || (calculator.mode === 'programmer' && e.key.match(/[A-Fa-f]/))) {
+        calculator.appendNumber(e.key.toUpperCase());
         calculator.updateDisplay();
-        highlightButton(`[data-number]`, e.key);
     }
 
-    // Decimal point
-    if (e.key === '.') {
+    // Decimal point (not in programmer mode)
+    if (e.key === '.' && calculator.mode !== 'programmer') {
         calculator.appendNumber('.');
         calculator.updateDisplay();
-        highlightButton(`[data-number]`, '.');
     }
 
     // Operations
     if (e.key === '+') {
         calculator.chooseOperation('+');
         calculator.updateDisplay();
-        highlightButton(`[data-operation]`, '+');
     }
 
     if (e.key === '-') {
         calculator.chooseOperation('-');
         calculator.updateDisplay();
-        highlightButton(`[data-operation]`, '-');
     }
 
     if (e.key === '*') {
         calculator.chooseOperation('×');
         calculator.updateDisplay();
-        highlightButton(`[data-operation]`, '×');
     }
 
     if (e.key === '/') {
         calculator.chooseOperation('÷');
         calculator.updateDisplay();
-        highlightButton(`[data-operation]`, '÷');
     }
 
     if (e.key === '%') {
         calculator.chooseOperation('%');
         calculator.updateDisplay();
-        highlightButton(`[data-operation]`, '%');
     }
 
     // Equals
     if (e.key === 'Enter' || e.key === '=') {
         calculator.compute();
         calculator.updateDisplay();
-        highlightButton('[data-equals]');
     }
 
     // Clear
     if (e.key === 'Escape' || e.key.toLowerCase() === 'c') {
         calculator.clear();
         calculator.updateDisplay();
-        highlightButton('[data-clear]');
     }
 
     // Delete/Backspace
     if (e.key === 'Backspace') {
         calculator.deleteDigit();
         calculator.updateDisplay();
-        highlightButton('[data-delete]');
     }
+    
+    playSound();
 });
-
-// Highlight button when keyboard is pressed
-function highlightButton(selector, textContent = null) {
-    let button;
-    if (textContent) {
-        const buttons = document.querySelectorAll(selector);
-        buttons.forEach(btn => {
-            if (btn.textContent === textContent) {
-                button = btn;
-            }
-        });
-    } else {
-        button = document.querySelector(selector);
-    }
-
-    if (button) {
-        addPressAnimation(button);
-    }
-}
 
 // Initialize display
 calculator.updateDisplay();

@@ -204,6 +204,82 @@ body {
     box-shadow: var(--shadow-hover);
 }
 
+/* Mode Switcher */
+.mode-switcher {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    background: var(--display-bg);
+    border-radius: 10px;
+    padding: 0.5rem;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--display-text-dim);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.mode-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.mode-btn.active {
+    background: var(--btn-operator);
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Base Display for Programmer Mode */
+.base-display {
+    background: var(--display-bg);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.base-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.base-row:last-child {
+    border-bottom: none;
+}
+
+.base-label {
+    font-weight: 700;
+    color: var(--btn-operator);
+    font-size: 0.9rem;
+    min-width: 50px;
+}
+
+.base-value {
+    color: var(--display-text);
+    font-size: 1rem;
+    word-break: break-all;
+}
+
+/* Mode Indicator */
+.mode-indicator {
+    font-size: 0.75rem;
+    color: var(--display-text-dim);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
 /* Display */
 .display {
     background: var(--display-bg);
@@ -388,6 +464,33 @@ body {
 
 .btn-special:hover {
     background: #2980b9;
+}
+
+.btn-scientific {
+    background: #16a085;
+    font-size: 1.1rem;
+}
+
+.btn-scientific:hover {
+    background: #1abc9c;
+}
+
+.btn-programmer {
+    background: #e67e22;
+    font-size: 1.1rem;
+}
+
+.btn-programmer:hover {
+    background: #f39c12;
+}
+
+.btn-bitwise {
+    background: #d35400;
+    font-size: 1rem;
+}
+
+.btn-bitwise:hover {
+    background: #e67e22;
 }
 
 .btn-zero {
