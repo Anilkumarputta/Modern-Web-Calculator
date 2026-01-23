@@ -3,6 +3,9 @@ class Calculator {
     constructor(previousOperandElement, currentOperandElement) {
         this.previousOperandElement = previousOperandElement;
         this.currentOperandElement = currentOperandElement;
+        this.memory = 0;
+        this.history = [];
+        this.soundEnabled = true;
         this.clear();
     }
 
@@ -23,6 +26,44 @@ class Calculator {
             this.currentOperand = '0';
         } else {
             this.currentOperand = this.currentOperand.slice(0, -1);
+        }
+    }
+
+    // Negate current number
+    negate() {
+        if (this.currentOperand === '0' || this.currentOperand === 'Cannot divide by zero') return;
+        if (this.currentOperand.startsWith('-')) {
+            this.currentOperand = this.currentOperand.slice(1);
+        } else {
+            this.currentOperand = '-' + this.currentOperand;
+        }
+    }
+
+    // Memory operations
+    memoryClear() {
+        this.memory = 0;
+        showToast('Memory cleared');
+    }
+
+    memoryRecall() {
+        this.currentOperand = this.memory.toString();
+        this.shouldResetScreen = true;
+        showToast('Memory recalled: ' + this.memory);
+    }
+
+    memoryAdd() {
+        const current = parseFloat(this.currentOperand);
+        if (!isNaN(current)) {
+            this.memory += current;
+            showToast('Added to memory: ' + this.memory);
+        }
+    }
+
+    memorySubtract() {
+        const current = parseFloat(this.currentOperand);
+        if (!isNaN(current)) {
+            this.memory -= current;
+            showToast('Subtracted from memory: ' + this.memory);
         }
     }
 
@@ -71,6 +112,8 @@ class Calculator {
         // If either value is not a number, return
         if (isNaN(prev) || isNaN(current)) return;
 
+        const expression = `${this.previousOperand} ${this.operation} ${this.currentOperand}`;
+
         switch (this.operation) {
             case '+':
                 computation = prev + current;
@@ -99,10 +142,35 @@ class Calculator {
         // Round to avoid floating point precision issues
         computation = Math.round(computation * 100000000) / 100000000;
         
+        // Add to history
+        this.addToHistory(expression, computation);
+        
         this.currentOperand = computation.toString();
         this.operation = undefined;
         this.previousOperand = '';
         this.shouldResetScreen = true;
+        
+        // Trigger pulse animation
+        this.currentOperandElement.classList.add('pulse');
+        setTimeout(() => {
+            this.currentOperandElement.classList.remove('pulse');
+        }, 500);
+    }
+
+    // Add calculation to history
+    addToHistory(expression, result) {
+        this.history.unshift({ expression, result });
+        if (this.history.length > 50) {
+            this.history.pop();
+        }
+        updateHistoryDisplay();
+    }
+
+    // Clear history
+    clearHistory() {
+        this.history = [];
+        updateHistoryDisplay();
+        showToast('History cleared');
     }
 
     // Show error message
@@ -178,6 +246,119 @@ const previousOperandElement = document.querySelector('[data-previous-operand]')
 const currentOperandElement = document.querySelector('[data-current-operand]');
 const calculator = new Calculator(previousOperandElement, currentOperandElement);
 
+// Sound effects
+const clickSound = new Audio('data:audio/wav;base64,UklGRhwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQA=');
+
+function playSound() {
+    if (calculator.soundEnabled) {
+        clickSound.currentTime = 0;
+        clickSound.play().catch(() => {}); // Ignore errors
+    }
+}
+
+// Toast notification
+function showToast(message) {
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--calculator-bg);
+            color: var(--display-text);
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        `;
+        document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.style.opacity = '1';
+    setTimeout(() => {
+        toast.style.opacity = '0';
+    }, 2000);
+}
+
+// Update history display
+function updateHistoryDisplay() {
+    const historyList = document.getElementById('history-list');
+    if (calculator.history.length === 0) {
+        historyList.innerHTML = '<p class="history-empty">No calculations yet</p>';
+    } else {
+        historyList.innerHTML = calculator.history.map((item, index) => `
+            <div class="history-item" data-history-index="${index}">
+                <div class="expression">${item.expression}</div>
+                <div class="result">= ${calculator.getDisplayNumber(item.result.toString())}</div>
+            </div>
+        `).join('');
+        
+        // Add click handlers to history items
+        document.querySelectorAll('.history-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const index = parseInt(item.dataset.historyIndex);
+                const historyItem = calculator.history[index];
+                calculator.currentOperand = historyItem.result.toString();
+                calculator.shouldResetScreen = true;
+                calculator.updateDisplay();
+                playSound();
+            });
+        });
+    }
+}
+
+// Theme toggle
+const themeToggle = document.getElementById('theme-toggle');
+themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('light-theme');
+    themeToggle.textContent = document.body.classList.contains('light-theme') ? '☀️' : '🌙';
+    playSound();
+    showToast(document.body.classList.contains('light-theme') ? 'Light theme' : 'Dark theme');
+});
+
+// History toggle
+const historyToggle = document.getElementById('history-toggle');
+const historySidebar = document.getElementById('history-sidebar');
+historyToggle.addEventListener('click', () => {
+    historySidebar.classList.toggle('active');
+    playSound();
+});
+
+// Sound toggle
+const soundToggle = document.getElementById('sound-toggle');
+soundToggle.addEventListener('click', () => {
+    calculator.soundEnabled = !calculator.soundEnabled;
+    soundToggle.textContent = calculator.soundEnabled ? '🔊' : '🔇';
+    playSound();
+    showToast(calculator.soundEnabled ? 'Sound on' : 'Sound off');
+});
+
+// Clear history
+const clearHistoryBtn = document.getElementById('clear-history');
+clearHistoryBtn.addEventListener('click', () => {
+    calculator.clearHistory();
+    playSound();
+});
+
+// Copy result
+const copyBtn = document.getElementById('copy-result');
+copyBtn.addEventListener('click', async () => {
+    try {
+        await navigator.clipboard.writeText(calculator.currentOperand);
+        copyBtn.classList.add('copied');
+        showToast('Copied to clipboard!');
+        setTimeout(() => copyBtn.classList.remove('copied'), 600);
+    } catch (err) {
+        showToast('Failed to copy');
+    }
+    playSound();
+});
+
 // Number buttons
 const numberButtons = document.querySelectorAll('[data-number]');
 numberButtons.forEach(button => {
@@ -185,6 +366,7 @@ numberButtons.forEach(button => {
         calculator.appendNumber(button.textContent);
         calculator.updateDisplay();
         addPressAnimation(button);
+        playSound();
     });
 });
 
@@ -195,6 +377,7 @@ operationButtons.forEach(button => {
         calculator.chooseOperation(button.textContent);
         calculator.updateDisplay();
         addPressAnimation(button);
+        playSound();
     });
 });
 
@@ -204,6 +387,7 @@ equalsButton.addEventListener('click', () => {
     calculator.compute();
     calculator.updateDisplay();
     addPressAnimation(equalsButton);
+    playSound();
 });
 
 // Clear button
@@ -212,6 +396,7 @@ clearButton.addEventListener('click', () => {
     calculator.clear();
     calculator.updateDisplay();
     addPressAnimation(clearButton);
+    playSound();
 });
 
 // Delete button
@@ -220,13 +405,50 @@ deleteButton.addEventListener('click', () => {
     calculator.deleteDigit();
     calculator.updateDisplay();
     addPressAnimation(deleteButton);
+    playSound();
+});
+
+// Negate button
+const negateButton = document.querySelector('[data-negate]');
+negateButton.addEventListener('click', () => {
+    calculator.negate();
+    calculator.updateDisplay();
+    addPressAnimation(negateButton);
+    playSound();
+});
+
+// Memory buttons
+const memoryButtons = document.querySelectorAll('[data-memory]');
+memoryButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const action = button.dataset.memory;
+        switch (action) {
+            case 'clear':
+                calculator.memoryClear();
+                break;
+            case 'recall':
+                calculator.memoryRecall();
+                break;
+            case 'add':
+                calculator.memoryAdd();
+                break;
+            case 'subtract':
+                calculator.memorySubtract();
+                break;
+        }
+        calculator.updateDisplay();
+        addPressAnimation(button);
+        playSound();
+    });
 });
 
 // Add press animation to button
 function addPressAnimation(button) {
     button.classList.add('pressed');
+    button.classList.add('ripple');
     setTimeout(() => {
         button.classList.remove('pressed');
+        button.classList.remove('ripple');
     }, 200);
 }
 

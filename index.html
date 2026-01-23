@@ -11,36 +11,69 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Theme Toggle & History Toggle -->
+    <div class="controls">
+        <button type="button" class="control-btn" id="theme-toggle" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
+            🌙
+        </button>
+        <button type="button" class="control-btn" id="history-toggle" aria-label="Toggle history" title="Toggle Calculation History">
+            📜
+        </button>
+        <button type="button" class="control-btn" id="sound-toggle" aria-label="Toggle sound" title="Toggle Sound Effects">
+            🔊
+        </button>
+    </div>
+
+    <!-- History Sidebar -->
+    <div class="history-sidebar" id="history-sidebar">
+        <div class="history-header">
+            <h3>History</h3>
+            <button type="button" class="clear-history-btn" id="clear-history" aria-label="Clear history">Clear All</button>
+        </div>
+        <div class="history-list" id="history-list">
+            <p class="history-empty">No calculations yet</p>
+        </div>
+    </div>
+
     <div class="container">
         <div class="calculator">
             <div class="display">
                 <div class="previous-operand" data-previous-operand></div>
                 <div class="current-operand" data-current-operand>0</div>
+                <button type="button" class="copy-btn" id="copy-result" aria-label="Copy result" title="Copy to Clipboard">
+                    📋
+                </button>
             </div>
             <div class="buttons">
-                <button type="button" class="btn btn-clear" data-clear>C</button>
-                <button type="button" class="btn btn-delete" data-delete>DEL</button>
+                <button type="button" class="btn btn-clear" data-clear aria-label="Clear">C</button>
+                <button type="button" class="btn btn-delete" data-delete aria-label="Delete">DEL</button>
+                <button type="button" class="btn btn-memory" data-memory="clear" aria-label="Memory Clear" title="Memory Clear">MC</button>
+                <button type="button" class="btn btn-memory" data-memory="recall" aria-label="Memory Recall" title="Memory Recall">MR</button>
+
+                <button type="button" class="btn btn-memory" data-memory="add" aria-label="Memory Add" title="Memory Add">M+</button>
+                <button type="button" class="btn btn-memory" data-memory="subtract" aria-label="Memory Subtract" title="Memory Subtract">M-</button>
                 <button type="button" class="btn btn-operator" data-operation>%</button>
                 <button type="button" class="btn btn-operator" data-operation>÷</button>
 
-                <button type="button" class="btn btn-number" data-number>7</button>
-                <button type="button" class="btn btn-number" data-number>8</button>
-                <button type="button" class="btn btn-number" data-number>9</button>
-                <button type="button" class="btn btn-operator" data-operation>×</button>
+                <button type="button" class="btn btn-number" data-number aria-label="7">7</button>
+                <button type="button" class="btn btn-number" data-number aria-label="8">8</button>
+                <button type="button" class="btn btn-number" data-number aria-label="9">9</button>
+                <button type="button" class="btn btn-operator" data-operation aria-label="Multiply">×</button>
 
-                <button type="button" class="btn btn-number" data-number>4</button>
-                <button type="button" class="btn btn-number" data-number>5</button>
-                <button type="button" class="btn btn-number" data-number>6</button>
-                <button type="button" class="btn btn-operator" data-operation>-</button>
+                <button type="button" class="btn btn-number" data-number aria-label="4">4</button>
+                <button type="button" class="btn btn-number" data-number aria-label="5">5</button>
+                <button type="button" class="btn btn-number" data-number aria-label="6">6</button>
+                <button type="button" class="btn btn-operator" data-operation aria-label="Subtract">-</button>
 
-                <button type="button" class="btn btn-number" data-number>1</button>
-                <button type="button" class="btn btn-number" data-number>2</button>
-                <button type="button" class="btn btn-number" data-number>3</button>
-                <button type="button" class="btn btn-operator" data-operation>+</button>
+                <button type="button" class="btn btn-number" data-number aria-label="1">1</button>
+                <button type="button" class="btn btn-number" data-number aria-label="2">2</button>
+                <button type="button" class="btn btn-number" data-number aria-label="3">3</button>
+                <button type="button" class="btn btn-operator" data-operation aria-label="Add">+</button>
 
-                <button type="button" class="btn btn-number btn-zero" data-number>0</button>
-                <button type="button" class="btn btn-number" data-number>.</button>
-                <button type="button" class="btn btn-equals" data-equals>=</button>
+                <button type="button" class="btn btn-special" data-negate aria-label="Negate" title="Toggle Sign">+/-</button>
+                <button type="button" class="btn btn-number btn-zero" data-number aria-label="0">0</button>
+                <button type="button" class="btn btn-number" data-number aria-label="Decimal point">.</button>
+                <button type="button" class="btn btn-equals" data-equals aria-label="Equals">=</button>
             </div>
         </div>
     </div>
