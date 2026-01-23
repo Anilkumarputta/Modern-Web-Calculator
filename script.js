@@ -692,7 +692,7 @@ const buttonLayouts = {
         {text: '=', class: 'btn-equals', action: 'equals'}
     ],
     programmer: [
-        {text: 'C', class: 'btn-clear', action: 'clear'},
+        {text: 'CLR', class: 'btn-clear', action: 'clear'},
         {text: 'DEL', class: 'btn-delete', action: 'delete'},
         {text: 'HEX', class: 'btn-programmer', action: 'base', value: 16},
         {text: 'DEC', class: 'btn-programmer', action: 'base', value: 10},
