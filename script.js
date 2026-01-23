@@ -232,8 +232,8 @@ function addPressAnimation(button) {
 
 // Keyboard support
 document.addEventListener('keydown', (e) => {
-    // Prevent default for certain keys
-    if (['Enter', 'Escape'].includes(e.key)) {
+    // Prevent default for calculator keys
+    if (['Enter', 'Escape', '/', '*', '+', '-', '%'].includes(e.key)) {
         e.preventDefault();
     }
 
