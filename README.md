@@ -208,7 +208,7 @@ SOFTWARE.
 ## 👨‍💻 Author
 
 **Anil Kumar Putta**
-- GitHub: [@Anilkumarputta](https://github.com/Anilkumarputta)
+- GitHub: [@Anilkumarputta](www.linkedin.com/in/anil-putta)
 
 ## 🙏 Acknowledgments
 
