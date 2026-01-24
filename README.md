@@ -54,7 +54,7 @@ The calculator features a clean, modern interface with:
 
 2. Navigate to the project directory:
    ```bash
-   cd simple-calculator
+   cd smartcalc
    ```
 
 3. Open `index.html` in your web browser:
