@@ -236,9 +236,6 @@ class Calculator {
         this.removeErrorState();
     }
 
-    // Log successful initialization
-    console.log('SmartCalc initialized successfully by Anil Kumar Putta');
-
     // Delete last digit
     deleteDigit() {
         if (this.shouldResetScreen) return;
