@@ -1,3 +1,9 @@
+/**
+ * SmartCalc - Modern Web Calculator
+ * @author Anil Kumar Putta
+ * @description Feature-rich calculator with keyboard support and responsive design
+ */
+
 // Calculator Class
 class Calculator {
     constructor(previousOperandElement, currentOperandElement) {
