@@ -34,8 +34,8 @@ A beautiful, modern calculator built with HTML, CSS, and vanilla JavaScript. Fea
 
 ## 🎯 Demo
 
-### Live Demo
-[**Try it now!**](https://anilkumarputta.github.io/simple-calculator)
+### Live Demo[**Try it now!**](https://anilkumarputta.github.io/smartcalc/)
+
 
 ### Screenshots
 The calculator features a clean, modern interface with:
