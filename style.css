@@ -30,6 +30,11 @@
     --transition: 0.3s ease;
 }
 
+/* Keyboard press visual feedback */
+.btn:active {
+    transform: translateY(1px) scale(0.98);
+}
+
 /* Light theme */
 body.light-theme {
     --bg-gradient-start: #f0f0f0;
