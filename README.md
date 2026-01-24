@@ -177,6 +177,10 @@ Contributions are welcome! If you'd like to improve the calculator:
 4. Push to the branch: `git push origin feature/amazing-feature`
 5. Open a Pull Request
 
+
+#### 💬 Feedback
+Found a bug or have a suggestion? [Open an issue](https://github.com/Anilkumarputta/smartcalc/issues)!
+
 ## 📄 License
 
 This project is licensed under the MIT License - see below for details:
