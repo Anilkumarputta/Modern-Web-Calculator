@@ -1,4 +1,4 @@
-# 🧮 SmartCalc
+# 🧮 Modern Web Calculator
 
 A beautiful, modern calculator built with HTML, CSS, and vanilla JavaScript. Features a clean dark theme, smooth animations, keyboard support, and responsive design that works seamlessly on both desktop and mobile devices.
 
