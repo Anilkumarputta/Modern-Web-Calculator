@@ -34,7 +34,7 @@ A beautiful, modern calculator built with HTML, CSS, and vanilla JavaScript. Fea
 
 ## 🎯 Demo
 
-https://anilkumarputta.github.io/SmartCalc/
+https://anilkumarputta.github.io/Modern-Web-Calculator/
 
 
 ### Screenshots
@@ -49,7 +49,7 @@ The calculator features a clean, modern interface with:
 ### Quick Start
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Anilkumarputta/smartcalc.git
+   git clone https://github.com/Anilkumarputta/Modern-Web-Calculator.git
    ```
 
 2. Navigate to the project directory:
